@@ -1,0 +1,25 @@
+{
+    "builders": [
+        {
+            "type": "yandex",
+            "service_account_key_file": "{{ user `service_account_key_file` }}",
+            "folder_id": "{{ user `folder_id` }}",
+            "source_image_family": "ubuntu-1804-lts",
+            "image_name": "docker-base-{{timestamp}}",
+            "image_family": "docker-base",
+	        "use_ipv4_nat": "true",
+            "ssh_username": "ubuntu",
+            "platform_id": "standard-v1",
+            "instance_mem_gb": "2",
+            "disk_size_gb": "15"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "ansible",
+            "use_proxy": "false",
+            "playbook_file": "ansible/playbooks/docker.yml",
+            "ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"]
+        }
+    ]
+}

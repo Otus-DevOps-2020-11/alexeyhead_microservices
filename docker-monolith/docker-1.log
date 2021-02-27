@@ -1,0 +1,7 @@
+REPOSITORY                TAG       IMAGE ID       CREATED              SIZE
+oleksii/ubuntu-tmp-file   latest    e15856c2c761   About a minute ago   63.3MB
+ubuntu                    18.04     c090eaba6b94   5 weeks ago          63.3MB
+hello-world               latest    bf756fb1ae65   14 months ago        13.3kB
+
+docker inspect container_ID - Display detailed information on one or more containers including information about resources
+docker inspect image_ID - Display detailed information on one or more basic images from which the container will be created

@@ -1,0 +1,12 @@
+---
+# tasks file for app
+ name: start App
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+  community.docker.docker_container:
+    name: otus-reddit
+    image: oleksiihead/otus-reddit:1.0
+    state: started
+    restart: yes
+    ports:
+      - "9292:9292"
