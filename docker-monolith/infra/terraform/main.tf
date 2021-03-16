@@ -36,4 +36,18 @@ resource "yandex_compute_instance" "docker" {
     ssh-keys = "ubuntu:${file(var.public_key_path)}"
   }
 
+  connection {
+    type = "ssh"
+    host = self.network_interface.0.nat_ip_address
+    user = "ubuntu"
+    agent = false
+    private_key = file(var.private_key_path)
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "docker container run -d -p 9292:9292 oleksiihead/otus-reddit:1.0"
+    ]
+  }
+
 }
