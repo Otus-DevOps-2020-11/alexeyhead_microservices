@@ -1,0 +1,4 @@
+# group's name
+[docker]
+#list of hosts in group
+docker-host ansible_host=178.154.202.49
