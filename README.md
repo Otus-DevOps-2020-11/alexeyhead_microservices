@@ -1,69 +1,54 @@
 # alexeyhead_microservices
 alexeyhead microservices repository
 
-### HW No. 13 (Lecture No. 17)
+### HW No. 14 (Lecture No. 18)
 
 - The practical task of the methodical manual is performed
-- the application is divided into three parts: post, comment and ui
-- Created `post-py/Dockerfile`, `comment/Dockerfile` and `ui/Dockerfile`
-- create images - NB! ui-image start from second step because first step docker already have in cache (a similar step contained in comment-image)
+- Changed docker-compose to work with many networks
 
 ```
-docker pull mongo:latest
-docker build -t oleksiihead/post:1.0 ./post-py
-docker build -t oleksiihead/comment:1.0 ./comment
-docker build -t oleksiihead/ui:1.0 ./ui
+networks:
+  back_net:
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.2.0/24
+  front_net:
+     ipam:
+       driver: default
+       config:
+         - subnet: 10.0.1.0/24
 ```
-- run containers to test the application
-
+- Parameterization of port, versions of services, subnets with  environments variables in `docker-compose.yml`
+- Use `.env` file with vars for `docker-compose up` - just do command, the file will be picked up automatically
+- Project's name. From official documentation:
 ```
-docker network create reddit
-docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db -v reddit_db:/app/db mongo:latest
-docker run -d --network=reddit --network-alias=post oleksiihead/post:1.0
-docker run -d --network=reddit --network-alias=comment oleksiihead/comment:1.0
-docker run -d --network=reddit -p 9292:9292 oleksiihead/ui:3.0
+-p, --project-name NAME     Specify an alternate project name
+                              (default: directory name)
 ```
-- run containers with new env vars, we have twwo ways: 1 - changed */Dockerfile (in this case we should build all images), 2 - using cli:
+Also we can use var `COMPOSE_PROJECT_NAME`
 
-```
-docker run -d --network=reddit --network-alias=app_post_db --network-alias=app_comment_db mongo:latest
-docker run -d --network=reddit --network-alias=app_post --env POST_DATABASE_HOST=app_post_db oleksiihead/post:1.0
-docker run -d --network=reddit --network-alias=app_comment --env COMMENT_DATABASE_HOST=app_comment_db oleksiihead/comment:1.0
-docker run -d --network=reddit -p 9292:9292 --env POST_SERVICE_HOST=app_post --env COMMENT_SERVICE_HOST=app_comment oleksiihead/ui:1.0
-```
-
-- use different methods to reduce the size of the image
-
-`src/ui/Dockerfile.1`:
-
-````
-FROM alpine:3.13.2
-
-RUN apk --update add --no-cache \
-    build-base \
-    ruby-dev \
-    ruby-full \
-    && gem install bundler:1.17.2 --no-document \
-    && rm -rf /var/cache/apk/*
-
-ENV APP_HOME /app
-RUN mkdir $APP_HOME
-
-WORKDIR $APP_HOME
-COPY Gemfile* $APP_HOME/
-RUN bundle install
-COPY . $APP_HOME
-
-ENV POST_SERVICE_HOST=post \
-    POST_SERVICE_PORT=5000 \
-    COMMENT_SERVICE_HOST=comment \
-    COMMENT_SERVICE_PORT=9292
-
-CMD ["puma"]
-
-````
-- after relaunch containers we have no data in app. To avoid this, use a volume for data storage. In mine case I use option from cli.
+##### Task with *
+- We can use another docker-compose file for override some sections
+- src/docker-compose.override.yml
 
 ```
-docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db -v reddit_db:/app/db mongo:latest
+version: '3.3'
+services:
+  ui:
+    command: ["puma", "--debug", "-w", "2"]
+  comment:
+    command: ["puma", "--debug", "-w", "2"]
+```
+- And check:
+
+```
+$ docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+$ docker-compose ps
+    Name                  Command             State           Ports
+----------------------------------------------------------------------------
+src_comment_1   puma --debug -w 2             Up
+src_post_1      python3 post_app.py           Up
+src_post_db_1   docker-entrypoint.sh mongod   Up      27017/tcp
+src_ui_1        puma --debug -w 2             Up      0.0.0.0:9292->9292/tcp
 ```

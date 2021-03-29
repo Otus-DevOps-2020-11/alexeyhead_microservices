@@ -7,3 +7,4 @@ packer/variables.json
 .terraform/
 venv/
 Pipfile*
+.env
