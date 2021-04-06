@@ -1,0 +1,28 @@
+---
+# tasks file for gitlab-ce
+- name: Create a directories for volumes if it does not exist
+  become: yes
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: '0755'
+  with_items:
+    - /srv/gitlab/config
+    - /srv/gitlab/data
+    - /srv/gitlab/logs
+
+- name: Copy template for docker-compose
+  template:
+    src: docker-compose.yml.j2
+    dest: /srv/gitlab/docker-compose.yml
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+
+- name: Run gitlab-ce with docker-compose
+  docker_compose:
+    project_src: /srv/gitlab
+    state: present
+
+
