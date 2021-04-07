@@ -9,6 +9,8 @@ stages:
 
 variables:
   DATABASE_URL: 'mongodb://mongo/user_posts'
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 before_script:
   - cd reddit
@@ -16,8 +18,15 @@ before_script:
 
 build_job:
   stage: build
+  image: docker:20.10.5
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS}
   script:
-    - echo 'Building'
+    - echo 'Building image'
+#    - docker build -t my-docker-image .
 
 test_unit_job:
   stage: test

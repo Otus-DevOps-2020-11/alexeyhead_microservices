@@ -1,0 +1,7 @@
+---
+# tasks file for gitlab-runner
+- name: Install gitlab-runner for Gitlab CI
+  command: docker run -d --name gitlab-runner --restart always -v /srv/gitlab-runner/config:/etc/gitlab-runner -v /var/run/docker.sock:/var/run/docker.sock gitlab/gitlab-runner:latest
+
+- name: Register gitlab-runner for Gitlab CI
+  command: docker exec -it gitlab-runner gitlab-runner register --url "http://{{ ansible_host }}/" --non-interactive --locked=false --name DockerRunner --executor docker --docker-image alpine:latest --registration-token "{{ gitlab_registration_token }}" --tag-list "linux,xenial,ubuntu,docker" --run-untagged
