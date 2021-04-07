@@ -1,4 +1,5 @@
 image: ruby:2.4.2
+
 stages:
   - build
   - test
@@ -7,8 +8,10 @@ stages:
   - production
 
 variables:
- DATABASE_URL: 'mongodb://mongo/user_posts'
- DOCKER_IMAGE: "oleksiihead/otus-reddit"
+  DATABASE_URL: 'mongodb://mongo/user_posts'
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_IMAGE: 'oleksiihead/otus-reddit'
 
 before_script:
   - cd reddit
@@ -16,29 +19,17 @@ before_script:
 
 build_job:
   stage: build
+  image: docker:20.10.5
   services:
     - docker:dind
-  image: docker
-  variables:
-    # because of docker-in-docker
-    # add to runner's conf: volumes = ["/var/run/docker.sock:/var/run/docker.sock", "/cache"]
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
-  # git commit -am "show GitLab $ENV" && git push gitlab gitlab-ci-1
   before_script:
     - docker info
-    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS}
+    - echo "${DOCKER_REGISTRY_PASS}" | docker login -u ${DOCKER_REGISTRY_USER} --password-stdin
   script:
-    - echo 'Building'
-    - env
-    - docker build  -t ${DOCKER_IMAGE}:${CI_COMMIT_REF_NAME} -t ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA} ./reddit/.
-    - docker push ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - echo 'Building image'
+    - docker build -t ${DOCKER_IMAGE}:${CI_COMMIT_REF_NAME} -t ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA} ./redit/.
     - docker push ${DOCKER_IMAGE}:${CI_COMMIT_REF_NAME}
-
-#test_unit_job:
-#  stage: test
-#  script:
-#    - echo 'Testing 1'
+    - docker push ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
 
 test_unit_job:
   stage: test
@@ -62,26 +53,15 @@ deploy_dev_job:
 
 branch review:
   stage: review
+  image: docker:20.10.5
   services:
     - docker:dind
-  image: docker
-  variables:
-    # because of docker-in-docker
-    # add to runner's conf: volumes = ["/var/run/docker.sock:/var/run/docker.sock", "/cache"]
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
-  # git commit -am "show GitLab $ENV" && git push gitlab gitlab-ci-1
   before_script:
     - docker info
-    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS}
+    - echo "${DOCKER_REGISTRY_PASS}" | docker login -u ${DOCKER_REGISTRY_USER} --password-stdin
   script:
     - echo "Deploy to $CI_ENVIRONMENT_SLUG"
-    - docker stop $(docker ps -q -a --filter "name=review.${CI_ENVIRONMENT_SLUG}") || true
-    - docker run
-      -d
-      --name review.${CI_ENVIRONMENT_SLUG}
-      --rm
-      ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - docker run -d ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     url: http://$CI_ENVIRONMENT_SLUG.example.com
@@ -94,9 +74,9 @@ staging:
   stage: stage
   when: manual
   only:
-   - /^\d+\.\d+\.\d+/
+    - /^\d+\.\d+\.\d+/
   script:
-    - echo 'Deploy stage'
+    - echo 'Deploy staging'
   environment:
     name: beta
     url: http://beta.example.com

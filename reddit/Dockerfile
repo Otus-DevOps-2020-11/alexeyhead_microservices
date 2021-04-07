@@ -13,7 +13,7 @@ COPY . $APP_HOME
 
 RUN rm Gemfile.lock \
     && bundle install \
-    && chmod 0777 /start.sh
+    && chmod 0777 start.sh
 
 EXPOSE 9292
-CMD ["/start.sh"]
+CMD ["/app/start.sh"]
