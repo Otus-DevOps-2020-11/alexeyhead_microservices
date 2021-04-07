@@ -27,7 +27,7 @@ build_job:
   # git commit -am "show GitLab $ENV" && git push gitlab gitlab-ci-1
   before_script:
     - docker info
-    - docker login -u ${docker_hub_login} -p ${docker_hub_password}
+    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS}
   script:
     - echo 'Building'
     - env
@@ -73,7 +73,7 @@ branch review:
   # git commit -am "show GitLab $ENV" && git push gitlab gitlab-ci-1
   before_script:
     - docker info
-    - docker login -u ${docker_hub_login} -p ${docker_hub_password}
+    - docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS}
   script:
     - echo "Deploy to $CI_ENVIRONMENT_SLUG"
     - docker stop $(docker ps -q -a --filter "name=review.${CI_ENVIRONMENT_SLUG}") || true
