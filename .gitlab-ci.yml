@@ -24,7 +24,7 @@ build_job:
     - docker:dind
   before_script:
 #    - docker info
-    - echo "$DOCKER_REGISTRY_PASS" | docker login -u ${DOCKER_REGISTRY_USER} -p ${DOCKER_REGISTRY_PASS} --password-stdin
+    - echo "$DOCKER_REGISTRY_PASS" | docker login -u ${DOCKER_REGISTRY_USER} --password-stdin
   script:
     - echo 'Building image'
 #    - docker build -t my-docker-image .
