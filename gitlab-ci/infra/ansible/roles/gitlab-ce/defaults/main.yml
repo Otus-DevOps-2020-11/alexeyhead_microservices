@@ -1,0 +1,6 @@
+---
+# defaults file for gitlab-ce
+deploy_user: ubuntu
+#gitlab_domain: 130.193.49.193
+#gitlab_external_url: "https://{{ gitlab_domain }}/"
+gitlab_external_url: "http://{{ ansible_host }}/"

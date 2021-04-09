@@ -1,0 +1,4 @@
+---
+# defaults file for gitlab-runner
+gitlab_external_url: "http://{{ ansible_host }}/"
+gitlab_registration_token: qMAdvM5DuFnMPQSz_bLE
