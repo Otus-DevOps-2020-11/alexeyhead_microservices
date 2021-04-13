@@ -1,8 +1,11 @@
-FROM ruby:2.2
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.13.2
+
+RUN apk --update add --no-cache \
+    build-base \
+    ruby-dev \
+    ruby-full \
+    && gem install bundler:1.17.2 --no-document \
+    && rm -rf /var/cache/apk/*
 
 ENV APP_HOME /app
 RUN mkdir $APP_HOME
